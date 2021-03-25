@@ -1,20 +1,22 @@
-import os
 import numpy as np
 import math
 import pandas as pd
 import pickle
+import os
 
-def find_clostest_match(searched_timestamp, images_timestamps):
-    value = np.int(searched_timestamp) / 1e9
-    images_numbers = np.copy(images_timestamps) / 1e9
-    retv = [abs(image_timestamp - value) for image_timestamp in images_numbers ]
-    min_idx = 0
-    for idx, element in enumerate(retv):
-        if element <= 1 and element < retv[min_idx]:
-            min_idx = idx
-
-    return images_timestamps[min_idx]
-
+def find_position(image, dataframes: np.array) -> np.array:
+    value = np.int(image) / 1e9
+    images_timestamps = np.copy(dataframes[:, 0])
+    images_timestamps = images_timestamps / 1e9
+    time_diff = np.abs(images_timestamps - value)
+    if np.amin(time_diff) > 1:
+        # print(f"Cannot find matching position for file: {image}")
+        return None
+    result = np.where(time_diff == np.amin(time_diff))
+    result_idx = result[0][0]
+    # match = str((dataframes[result_idx, 0] / 1e9)).replace(".","")
+    # print(f"Value: {image} is matched with {match} with timediff {np.amin(time_diff)}")
+    return np.array([dataframes[result_idx, 1], dataframes[result_idx, 2], dataframes[result_idx, 3]])
 
 def get_images_timestamps(images_path):
     images = os.listdir(images_path)
@@ -22,69 +24,52 @@ def get_images_timestamps(images_path):
         images[idx] = np.int(img.split(".")[0])
     return np.array(images)
 
-def preprocess_positions(dataframes):
-    print("Processing positions")
-
+def dataframes_to_numpy(dataframes) -> np.array:
     retv = []
-    images_path = "/content/datasets/ParkingLot/polar"
+    for _, row in dataframes.iterrows():
+        frame = [row["timestamp"], row["pos_x"], row["pos_y"], row["pos_z"]]
+        retv.append(np.array(frame))
+
+    return np.array(retv)
+
+def preprocess_positions(dataframes : np.array, images_path):
+    retv = []
     images = get_images_timestamps(images_path)
 
-    for _, row in dataframes.iterrows():
-        matching_image = find_clostest_match(row["timestamp"], images)
-        position = np.zeros((3,1), dtype = np.float64)
-        position[0] = np.array([row["pos_x"]])
-        position[1] = np.array([row["pos_y"]])
-        position[2] = np.array([row["pos_z"]])
-        retv.append({
-            "timestamp": matching_image,
-            "position": position
-        })
+    for image in images:
+        matching_position = find_position(image, dataframes)
+        if matching_position is not None:
+            retv.append({
+                "timestamp": image,
+                "position" : matching_position
+            })
 
     return retv
 
-def is_negative(x1, x2, y1, y2, z1, z2):
-    return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2) + math.pow(z1 - z2, 2)) >= 50
+def is_negative(position_1, position_2):
+    temp = np.power(position_1 - position_2, 2)
+    return math.sqrt(temp[0] + temp[1] + temp[2]) >= 30
 
-def is_positive(x1, x2, y1, y2, z1, z2):
-    return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2) + math.pow(z1 - z2, 2)) <= 10
+def is_positive(position_1, position_2):
+    temp = np.power(position_1 - position_2, 2)
+    return math.sqrt(temp[0] + temp[1] + temp[2]) <= 10
 
-def preprocess_queries(dataset_path, position_filepath):
 
-    assert os.path.exists(position_filepath), f"Cannot access position filepath: {position_filepath}"
-    assert os.path.exists(dataset_path), f"Cannot access dataset path: {dataset_path}"
+def create_dataset_from_frames(dataframes):
+    dataset = {}
 
-    queries_filepath = os.path.join(dataset_path, "processed_queries.pickle")
-
-    my_dataset = {}
-
-    if os.path.exists(queries_filepath):
-        print(f"Loading file {queries_filepath}")
-        with open(queries_filepath, "rb") as handle:
-            my_dataset = pickle.load(handle)
-        return my_dataset       
-
-    df = pd.read_csv(position_filepath, 
-                 names = ["timestamp", "rot_x1", "rot_x2", "rot_x3", "pos_x", "rot_y1", "rot_y2", "rot_y3", "pos_y", "rot_z1", "rot_z2", "rot_z3", "pos_z", ], 
-                 header = None,
-                 dtype = {"timestamp" : np.str_})
-    
-    dataframes = preprocess_positions(df)
-    
     for idx, elem in enumerate(dataframes):
         positives = [0] * len(dataframes)
         negatives = [0] * len(dataframes)
-        x1 = elem["position"][0]
-        y1 = elem["position"][1]
-        z1 = elem["position"][2]
+        position = elem["position"]
+
         for index, example in enumerate(dataframes):
             if index == idx:
                 continue
-            x2 = example["position"][0]
-            y2 = example["position"][1]
-            z2 = example["position"][2]
-            if is_positive(x1, x2, y1, y2, z1, z2):
+            exaple_position = example["position"]
+            if is_positive(position, exaple_position):
                 positives[index] = 1
-            elif is_negative(x1, x2, y1, y2, z1, z2):
+            elif is_negative(position, exaple_position):
                 negatives[index] = 1
 
         single_frame = {
@@ -92,10 +77,79 @@ def preprocess_queries(dataset_path, position_filepath):
             "positives" : positives,
             "negatives" : negatives
         }
-        my_dataset[idx] = single_frame
+
+        dataset[idx] = single_frame
+
+    return dataset
+
+def devide_frames(dataframes):
+    train_frames = []
+    test_frames = []
+
+    for frame in dataframes:
+        if frame["position"][0] < 3.47e5 and frame["position"][1] < 4.04e6:
+            test_frames.append(frame)
+        else:
+            train_frames.append(frame)
+
+    return { "train": train_frames, "test": test_frames}
+
+def preprocess_queries(dataset_path, position_filepath):
+
+    assert os.path.exists(position_filepath), f"Cannot access position filepath: {position_filepath}"
+    assert os.path.exists(dataset_path), f"Cannot access dataset path: {dataset_path}"
+
+    train_queries_filepath = os.path.join(dataset_path, "train_processed_queries.pickle")
+    test_queries_filepath = os.path.join(dataset_path, "test_processed_queries.pickle")
+    
+    images_path = os.path.join(dataset_path, "polar")
+
+    dataset = {}
+
+    if os.path.exists(train_queries_filepath):
+        print(f"Loading file {train_queries_filepath}")
+        with open(train_queries_filepath, "rb") as handle:
+            dataset["train"] = pickle.load(handle)
+
+    if os.path.exists(test_queries_filepath):
+        print(f"Loading file {test_queries_filepath}")
+        with open(test_queries_filepath, "rb") as handle:
+            dataset["test"] = pickle.load(handle)
+
+    if "train" in dataset and "test" in dataset:
+        return dataset
+
+    df = pd.read_csv(position_filepath, 
+                 names = ["timestamp", "rot_x1", "rot_x2", "rot_x3", "pos_x", "rot_y1", "rot_y2", "rot_y3", "pos_y", "rot_z1", "rot_z2", "rot_z3", "pos_z", ], 
+                 header = None,
+                 dtype = {"timestamp" : np.float64})
+    
+    df_array = dataframes_to_numpy(df)
+    
+    postion_frames = preprocess_positions(df_array, images_path)
+
+    dataframes = devide_frames(postion_frames)
+
+    if "train" not in dataset:
+        dataset["train"] = create_dataset_from_frames(dataframes["train"])
+
+        with open(train_queries_filepath, "wb") as handle:
+            pickle.dump(dataset["train"], handle)
 
     
-    with open(queries_filepath, "wb") as handle:
-        pickle.dump(my_dataset, handle)
+    if "test" not in dataset:
+        dataset["test"] = create_dataset_from_frames(dataframes["test"])
 
-    return my_dataset
+        with open(test_queries_filepath, "wb") as handle:
+            pickle.dump(dataset["test"], handle)
+
+    return dataset
+
+
+if __name__ == "__main__":
+    dataset_path = ''
+    position_filepath = ''
+
+    print("Starting querries preprocessing")
+    preprocess_queries(dataset_path, position_filepath)
+    print("Finished querries preprocessing")

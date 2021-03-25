@@ -1,7 +1,8 @@
 from torch.utils.data import DataLoader, Sampler
 import copy
 import random
-
+import MulRanDataset
+from .dataset_utils import display_batch
 
 class BatchSampler(Sampler):
     def __init__(self, dataset: MulRanDataset, batch_size: int, batch_size_limit:int = None):
@@ -60,13 +61,13 @@ class BatchSampler(Sampler):
         for batch in self.batch_idx:
             assert len(batch) % self.k == 0, f"Incorrect batch size: {len(batch)}"
 
-# if __name__ == '__main__':
-#     dataset_path = '/media/sf_Datasets/PointNetVLAD'
-#     query_filename = 'test_queries_baseline.pickle'
+if __name__ == '__main__':
+    dataset_path = ""
+    query_filename = ''
 
-#     ds = OxfordDataset(dataset_path, query_filename)
-#     sampler = BatchSampler(ds, batch_size=16)
-#     dataloader = DataLoader(ds, batch_sampler=sampler)
-#     e = ds[0]
-#     res = next(iter(dataloader))
-#     print(res)
+    ds = MulRanDataset(dataset_path, query_filename)
+    sampler = BatchSampler(ds, batch_size=16)
+    dataloader = DataLoader(ds, batch_sampler=sampler)
+    e = ds[0]
+    res = next(iter(dataloader))
+    display_batch(res)

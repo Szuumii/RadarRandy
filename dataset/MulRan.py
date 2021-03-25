@@ -8,9 +8,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 
 
-
 class MulRanDataset(Dataset):
-    def __init__(self, dataset_path, queries_filepath, transform=transforms.ToTensor()):
+    def __init__(self, dataset_path, queries_filepath, transform=None):
         self.dataset_path = dataset_path
         self.queries_filepath = queries_filepath
         self.transform = transform
@@ -27,15 +26,17 @@ class MulRanDataset(Dataset):
             queries = pickle.load(handle)
 
         for idx in queries:
-            queries[idx]["positives"] = [ndx for ndx, pos_elem in enumerate(queries[idx]["positives"]) if pos_elem == 1]
-            queries[idx]["negatives"] = [ndx for ndx, neg_elem in enumerate(queries[idx]["positives"]) if neg_elem == 1]
+            queries[idx]["positives"] = np.where(np.array(queries[idx]["positives"]) == 1)[0]
+            queries[idx]["negatives"] = np.where(np.array(queries[idx]["negatives"]) == 1)[0]    
 
         return queries
 
     def __getitem__(self, idx):
         query_filename = self.queries[idx]["query"]
         query_image = self.load_picture(query_filename)
-        query_tensor = self.transform(query_image)
+        query_image = query_image.convert("RGB")
+        if self.transform is not None:
+            query_tensor = self.transform(query_image)
         return query_tensor, idx
     
     def load_picture(self, query_filename):
@@ -48,4 +49,7 @@ class MulRanDataset(Dataset):
 
     def get_negatives(self, idx):
         return self.queries[idx]["negatives"]
+
+    def print_info(self):
+        print(f"Dataset contains {len(queries)} queries")
     

@@ -15,19 +15,22 @@ class MulRanDataset(Dataset):
         self.transform = transform
         self.queries = self.load_queries_file(self.queries_filepath)
 
-    def __len__():
+    def __len__(self):
         return len(self.queries)
 
     def load_queries_file(self, queries_filepath):
         print(f"Loading file {queries_filepath}")
-        assert os.path.exists(self.queries_filepath), f"Cannot access queries file {queries_filepath}"
+        assert os.path.exists(
+            self.queries_filepath), f"Cannot access queries file {queries_filepath}"
         queries = {}
         with open(queries_filepath, 'rb') as handle:
             queries = pickle.load(handle)
 
         for idx in queries:
-            queries[idx]["positives"] = np.where(np.array(queries[idx]["positives"]) == 1)[0]
-            queries[idx]["negatives"] = np.where(np.array(queries[idx]["negatives"]) == 1)[0]    
+            queries[idx]["positives"] = np.where(
+                np.array(queries[idx]["positives"]) == 1)[0]
+            queries[idx]["negatives"] = np.where(
+                np.array(queries[idx]["negatives"]) == 1)[0]
 
         return queries
 
@@ -38,12 +41,13 @@ class MulRanDataset(Dataset):
         if self.transform is not None:
             query_tensor = self.transform(query_image)
         return query_tensor, idx
-    
+
     def load_picture(self, query_filename):
-        file_path = os.path.join(self.dataset_path, "polar", str(query_filename) + ".png")
+        file_path = os.path.join(
+            self.dataset_path, "polar", str(query_filename) + ".png")
         picture = Image.open(file_path)
         return picture
-    
+
     def get_positives(self, idx):
         return self.queries[idx]["positives"]
 
@@ -52,4 +56,3 @@ class MulRanDataset(Dataset):
 
     def print_info(self):
         print(f"Dataset contains {len(queries)} queries")
-    

@@ -15,7 +15,7 @@ class MulRanDataset(Dataset):
         self.transform = transform
         self.queries = self.load_queries_file(self.queries_filepath)
 
-    def __len__():
+    def __len__(self):
         return len(self.queries)
 
     def load_queries_file(self, queries_filepath):

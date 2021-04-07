@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 import random
 import torch
-from torch.utlis.data import Dataset
+from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 from PIL import Image
 
@@ -20,14 +20,17 @@ class MulRanDataset(Dataset):
 
     def load_queries_file(self, queries_filepath):
         print(f"Loading file {queries_filepath}")
-        assert os.path.exists(self.queries_filepath), f"Cannot access queries file {queries_filepath}"
+        assert os.path.exists(
+            self.queries_filepath), f"Cannot access queries file {queries_filepath}"
         queries = {}
         with open(queries_filepath, 'rb') as handle:
             queries = pickle.load(handle)
 
         for idx in queries:
-            queries[idx]["positives"] = np.where(np.array(queries[idx]["positives"]) == 1)[0]
-            queries[idx]["negatives"] = np.where(np.array(queries[idx]["negatives"]) == 1)[0]    
+            queries[idx]["positives"] = np.where(
+                np.array(queries[idx]["positives"]) == 1)[0]
+            queries[idx]["negatives"] = np.where(
+                np.array(queries[idx]["negatives"]) == 1)[0]
 
         return queries
 
@@ -38,12 +41,13 @@ class MulRanDataset(Dataset):
         if self.transform is not None:
             query_tensor = self.transform(query_image)
         return query_tensor, idx
-    
+
     def load_picture(self, query_filename):
-        file_path = os.path.join(self.dataset_path, "polar", str(query_filename) + ".png")
+        file_path = os.path.join(
+            self.dataset_path, "polar", str(query_filename) + ".png")
         picture = Image.open(file_path)
         return picture
-    
+
     def get_positives(self, idx):
         return self.queries[idx]["positives"]
 
@@ -51,5 +55,14 @@ class MulRanDataset(Dataset):
         return self.queries[idx]["negatives"]
 
     def print_info(self):
-        print(f"Dataset contains {len(queries)} queries")
-    
+        print(f"Dataset contains {len(self.queries)} queries")
+
+
+if __name__ == "__main__":
+    dataset_path = '/home/jszumski/mulran_dataset'
+    queries_file = '/home/jszumski/mulran_dataset/train_processed_queries.pickle'
+    transform = transforms.ToTensor()
+
+    dataset = MulRanDataset(dataset_path, queries_file, transform)
+
+    dataset.print_info()

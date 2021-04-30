@@ -1,8 +1,8 @@
 from torch.utils.data import DataLoader, Sampler
 import copy
 import random
-import MulRanDataset
-from .dataset_utils import display_batch
+from MulRan import MulRanDataset
+from dataset_utils import display_batch
 
 
 class BatchSampler(Sampler):

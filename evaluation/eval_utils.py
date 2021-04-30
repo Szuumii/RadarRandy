@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
+import torch
 
-
-def compute_embeddings(dataset, model):
+def compute_embeddings(dataset, device,model):
     model.to(device)
     model.eval()
 
     embeddings = None
-    for ndx, (x, _) in enumerate(dataset):
+    for ndx, (x, _, _) in enumerate(dataset):
+        # if ndx % 100 == 0:
+            # print(f"Going through {ndx}-th example of database set")
         x = x.to(device)
         x = x.unsqueeze(0).contiguous()
         with torch.no_grad():
@@ -23,11 +25,13 @@ def compute_embeddings(dataset, model):
     return embeddings
 
 
-def find_nearest_neighbours(embeddings, query_ndx, k=10):
-    y = embeddings[query_ndx]
-    dist = torch.norm(embeddings - y, p=2, dim=1)
+def is_true_positive(position_1, position_2):
+    pass
+
+
+def find_nearest_neighbours(database_embeddings, querry_embedding, k=5):
+    dist = torch.norm(database_embeddings - querry_embedding, p=2, dim=1)
     values, nn_ndx = torch.topk(dist, k + 1, largest=False, sorted=True)
-    nn_ndx = nn_ndx[1:]
     return nn_ndx, dist[nn_ndx]
 
 
@@ -36,7 +40,7 @@ def show_search_results(ds, embeddings, query_ndx):
     print(nn_dist)
     fig, axis = plt.subplots(1, 1 + len(nn_ndx))
 
-    fig.suptitle('Nearenst Neighbours')
+    fig.suptitle('Nearest Neighbours')
     query_img, query_id = ds[query_ndx]
     axis[0].imshow(tensor_to_image(query_img))
     axis[0].set_xlabel(f'id: {query_id}\nbase')

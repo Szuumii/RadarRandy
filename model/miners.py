@@ -1,4 +1,5 @@
 from pytorch_metric_learning.distances import LpDistance
+import torch
 
 class HardTripletMiner():
     def __init__(self, distance):

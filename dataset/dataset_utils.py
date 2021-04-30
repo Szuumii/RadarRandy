@@ -1,7 +1,7 @@
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import os
-from MulRan import MulRanDataset
+from dataset.MulRan import MulRanDataset
 
 
 def make_datasets(dataset_root):

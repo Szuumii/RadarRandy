@@ -1,6 +1,6 @@
 import pytorch_lightning as pl
 import sys
-from models import MetricLearner
+from model.models import MetricLearner
 
 if __name__ == "__main__":
     dataset_root = '/home/jszumski/mulran_dataset'

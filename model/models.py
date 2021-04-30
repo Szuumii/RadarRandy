@@ -4,10 +4,10 @@ import torch.nn as nn
 import torch
 from torch.utils.data import DataLoader
 import os
-from MulRan import MulRanDataset
-from sampler import BatchSampler
+from dataset.MulRan import MulRanDataset
+from dataset.sampler import BatchSampler
 from pytorch_metric_learning import losses
-from miners import HardTripletMiner
+from model.miners import HardTripletMiner
 from pytorch_metric_learning.distances import LpDistance
 
 

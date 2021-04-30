@@ -1,11 +1,11 @@
 from eval_utils import compute_embeddings, find_nearest_neighbours
-from MulRan import MulRanDataset
-from models import MetricLearner
+from dataset.MulRan import MulRanDataset
+from model.models import MetricLearner
 import random
 import numpy as np
 from torchvision import transforms
 import torch
-from dataset_preprocessing import is_positive
+from dataset.dataset_preprocessing import is_positive
 
 
 def evaluate(model):

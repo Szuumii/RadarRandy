@@ -20,14 +20,14 @@ class BatchSampler(Sampler):
         for idx in self.dataset.queries:
             self.elems_idx[idx] = True
 
+        self.generate_batches()
+        
     def __len__(self):
         return len(self.batch_idx)
 
     def __iter__(self):
-        self.generate_batches()
-        for batch in self.batch_idx:
-            for element in batch:
-                yield element
+        for idx in self.batch_idx:
+            yield idx
 
     def generate_batches(self):
         self.batch_idx = []
@@ -40,7 +40,7 @@ class BatchSampler(Sampler):
                 if len(current_batch) >= 2 * self.k:
                     assert len(
                         current_batch) % self.k == 0, f"Incorrect batch size: {len(current_batch)}"
-                    self.batch_idx.append(current_batch)
+                    self.batch_idx.extend(current_batch)
                     current_batch = []
                 if len(unused_elements_idx) == 0:
                     break
@@ -63,14 +63,10 @@ class BatchSampler(Sampler):
 
             current_batch += [selected_element, second_positive]
 
-        for batch in self.batch_idx:
-            assert len(
-                batch) % self.k == 0, f"Incorrect batch size: {len(batch)}"
-
 
 if __name__ == '__main__':
-    dataset_path = ""
-    query_filename = ''
+    dataset_path = '/home/jszumski/mulran_dataset'
+    query_filename = '/home/jszumski/mulran_dataset/train_processed_queries.pickle'
 
     ds = MulRanDataset(dataset_path, query_filename)
     sampler = BatchSampler(ds, batch_size=16)

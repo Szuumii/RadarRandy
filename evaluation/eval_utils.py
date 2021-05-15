@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import torch
+from dataset.dataset_utils import tensor_to_image
 
 def compute_embeddings(dataset, device,model):
     model.to(device)

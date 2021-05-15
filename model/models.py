@@ -6,14 +6,14 @@ from torch.utils.data import DataLoader
 import os
 from dataset.MulRan import MulRanDataset
 from dataset.sampler import BatchSampler
-from pytorch_metric_learning import losses
+from pytorch_metric_learning import losses, reducers
 from model.miners import HardTripletMiner
 from pytorch_metric_learning.distances import LpDistance
 
 
 
 class MetricLearner(pl.LightningModule):
-    def __init__(self, dataset_root, embeding_size=256, margin=0.4, batch_size=32, small_train=False):
+    def __init__(self, dataset_root, embeding_size=256, margin=0.4, batch_size=32, small_train=False, learning_rate= 1e-6):
         super().__init__()
 
         self.save_hyperparameters()
@@ -25,9 +25,10 @@ class MetricLearner(pl.LightningModule):
         self.net.fc = nn.Linear(self.net.fc.in_features, embeding_size)
 
         self.miner = HardTripletMiner(distance=LpDistance(power=2))
+        self.reducer = reducers.DoNothingReducer(collect_stats=True)
         self.loss = losses.TripletMarginLoss(margin=self.margin)
 
-        self.learning_rate = 6e-5
+        self.learning_rate = learning_rate
 
     @pl.core.decorators.auto_move_data
     def forward(self, x):
@@ -42,6 +43,7 @@ class MetricLearner(pl.LightningModule):
         dummy_labels = torch.arange(embeddings.shape[0]).to(embeddings.device)
         loss = self.loss(embeddings, dummy_labels, triplets)
         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True)
+        # self.log('train_num_non_zero_triplets', loss.reducer.triplets_past_filter, on_step=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -120,16 +122,12 @@ class MetricLearner(pl.LightningModule):
         return torch.tensor(positive_mask), torch.tensor(negative_mask)
 
     def train_dataloader(self):
-        dataloader = DataLoader(
+        return DataLoader(
             self.train_dataset, batch_size=self.batch_size, sampler=self.train_sampler, num_workers=24)
-        next(iter(dataloader))
-        return dataloader
 
     def val_dataloader(self):
-        dataloader = DataLoader(
-            self.val_dataset, batch_size=self.batch_size, sampler=self.val_sampler, num_workers=24)
-        next(iter(dataloader))
-        return dataloader
+        return DataLoader(
+            self.val_dataset, batch_size=self.batch_size, sampler=self.val_sampler, num_workers=24) 
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)

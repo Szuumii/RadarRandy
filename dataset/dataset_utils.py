@@ -1,5 +1,6 @@
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 from dataset.MulRan import MulRanDataset
 
@@ -21,7 +22,7 @@ def make_datasets(dataset_root):
 
 def tensor_to_image(tensor_image):
     img_size = (400, 400)
-    to_pil_image = Compose(
+    to_pil_image = transforms.Compose(
         [transforms.Resize(img_size), transforms.ToPILImage()])
     image = to_pil_image(tensor_image)
     return image

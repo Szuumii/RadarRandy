@@ -52,7 +52,7 @@ and timestamps are added to reduce communication load. Other type of data are 36
 polar images. Sample of polar image data is presented below.
 
 <center>
-<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/polarExample.png" width="400" height="400">
+<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/polarExample.png" width="400" height="307">
 </center>
 
 ### Trajectories

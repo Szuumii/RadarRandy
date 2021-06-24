@@ -40,6 +40,8 @@ sensor including radar, LiDAR as well as GPS and other positioning systems have 
 mounted on top of the vehicle to increase it’s mobility and robustness. Radar and Li-
 DAR specification are visible in Figures below.
 
+![](https://github.com/Szuumii/RadarRandy/blob/main/images/mobile-platform.PNG)
+
 
 ### Radar data
 
@@ -47,6 +49,8 @@ In the dataset we can find two types of radar data. One of them is 1D intensity 
 (raw data) taken from each angle. Data are accumulated by 1 sweep (400 angle bins)
 and timestamps are added to reduce communication load. Other type of data are 360°
 polar images. Sample of polar image data is presented below.
+
+![](https://github.com/Szuumii/RadarRandy/blob/main/images/polarExample.png)
 
 ### Trajectories
 
@@ -59,6 +63,8 @@ complexities. In the dataset the position were established partially by VRS-GPS 
 fiber optic gyro (FOG) data and graph SLAM were used to estimate baseline of the
 position. The reference grid with positions of different data gathering locations is visible
 in Figure below.
+
+![](https://github.com/Szuumii/RadarRandy/blob/main/images/position-grid.PNG)
 
 ## Solution Design
 
@@ -101,6 +107,8 @@ from the MulRan dataset. Triplet loss function “favours” similar embeddings 
 for the images that are know to be positive and “disapproves” similarity in images
 that are known to be negative.
 
+![](https://github.com/Szuumii/RadarRandy/blob/main/images/learning-triplet.png)
+
 ### Evaluation Methodology
 
 For the evaluation purposes we need to create two specific datasets. One of them consists
@@ -113,3 +121,5 @@ set and extract images that have smallest distance to our representation. If our
 images have the position that is truly positive ( within 10 meters ) we define our evaluation
 as success. We repeat our image selection k times and create the accuracy metric
 off of that.
+
+![](https://github.com/Szuumii/RadarRandy/blob/main/images/location-method.PNG)

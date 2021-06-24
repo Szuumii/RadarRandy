@@ -37,10 +37,11 @@ My solution uses learning-based method to improve it’s accuracy and reliabilit
 
 Equipment used to create readings from my dataset are presented on Fig. 1. Different
 sensor including radar, LiDAR as well as GPS and other positioning systems have been
-mounted on top of the vehicle to increase it’s mobility and robustness. Radar and Li-
-DAR specification are visible in Figures below.
+mounted on top of the vehicle to increase it’s mobility and robustness. This platform is visible in Figure below.
 
-![](https://github.com/Szuumii/RadarRandy/blob/main/images/mobile-platform.PNG)
+<center>
+<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/mobile-platform.PNG" width="400" height="400">
+</center>
 
 
 ### Radar data
@@ -50,7 +51,9 @@ In the dataset we can find two types of radar data. One of them is 1D intensity 
 and timestamps are added to reduce communication load. Other type of data are 360°
 polar images. Sample of polar image data is presented below.
 
-![](https://github.com/Szuumii/RadarRandy/blob/main/images/polarExample.png)
+<center>
+<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/polarExample.png" width="400" height="400">
+</center>
 
 ### Trajectories
 
@@ -64,7 +67,9 @@ fiber optic gyro (FOG) data and graph SLAM were used to estimate baseline of the
 position. The reference grid with positions of different data gathering locations is visible
 in Figure below.
 
-![](https://github.com/Szuumii/RadarRandy/blob/main/images/position-grid.PNG)
+<center>
+<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/position-grid.PNG">
+</center>
 
 ## Solution Design
 
@@ -107,7 +112,9 @@ from the MulRan dataset. Triplet loss function “favours” similar embeddings 
 for the images that are know to be positive and “disapproves” similarity in images
 that are known to be negative.
 
-![](https://github.com/Szuumii/RadarRandy/blob/main/images/learning-triplet.png)
+<center>
+<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/learning-triplet.png">
+</center>
 
 ### Evaluation Methodology
 
@@ -122,4 +129,6 @@ images have the position that is truly positive ( within 10 meters ) we define o
 as success. We repeat our image selection k times and create the accuracy metric
 off of that.
 
-![](https://github.com/Szuumii/RadarRandy/blob/main/images/location-method.PNG)
+<center>
+<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/location-method.PNG">
+</center>

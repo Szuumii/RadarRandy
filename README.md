@@ -40,7 +40,7 @@ sensor including radar, LiDAR as well as GPS and other positioning systems have 
 mounted on top of the vehicle to increase it’s mobility and robustness. This platform is visible in Figure below.
 
 <center>
-<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/mobile-platform.PNG" width="400" height="400">
+<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/mobile-platform.PNG">
 </center>
 
 
@@ -52,7 +52,7 @@ and timestamps are added to reduce communication load. Other type of data are 36
 polar images. Sample of polar image data is presented below.
 
 <center>
-<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/polarExample.png" width="400" height="307">
+<img src="https://github.com/Szuumii/RadarRandy/blob/main/images/polarExample.png">
 </center>
 
 ### Trajectories
